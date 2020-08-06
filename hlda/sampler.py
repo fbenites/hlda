@@ -186,7 +186,8 @@ class HierarchicalLDA(object):
 
     def estimate(self, num_samples, display_topics=50, n_words=5, with_weights=True):
 
-        print 'HierarchicalLDA sampling\n'
+        print('HierarchicalLDA sampling\n')
+        out=""
         for s in range(num_samples):
 
             sys.stdout.write('.')
@@ -198,9 +199,10 @@ class HierarchicalLDA(object):
                 self.sample_topics(d)
 
             if (s > 0) and ((s+1) % display_topics == 0):
-                print " %d" % (s+1)
-                self.print_nodes(n_words, with_weights)
-                print
+                print(" %d" % (s+1))
+                out+="\n"+self.collect_nodes(n_words, with_weights)
+                print(out)
+        return out
 
     def sample_path(self, d):
 
@@ -377,16 +379,19 @@ class HierarchicalLDA(object):
             node.word_counts[w] += 1
             node.total_words += 1
 
-    def print_nodes(self, n_words, with_weights):
-        self.print_node(self.root_node, 0, n_words, with_weights)
+    def collect_nodes(self, n_words, with_weights):
+        out="\n"
+        out+=self.collect_node(self.root_node, 0, n_words, with_weights)
 
-    def print_node(self, node, indent, n_words, with_weights):
+
+    def collect_node(self, node, indent, n_words, with_weights):
         out = '    ' * indent
-        out += 'topic=%d level=%d (documents=%d): ' % (node.node_id, node.level, node.customers)
-        out += node.get_top_words(n_words, with_weights)
-        print out
+        out += '\ntopic=%d level=%d (documents=%d): ' % (node.node_id, node.level, node.customers)
+        out += "\n"+node.get_top_words(n_words, with_weights)
+        #print out
         for child in node.children:
-            self.print_node(child, indent+1, n_words, with_weights)
+            out+="\n"+self.collect_node(child, indent+1, n_words, with_weights)
+        return out
 
 def load_vocab(file_name):
     with open(file_name, 'rb') as f:
